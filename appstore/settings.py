@@ -32,13 +32,20 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'api.apps.ApiConfig',
+    'main.apps.MainConfig',
+    'store.apps.StoreConfig',
+    'ichat.apps.IchatConfig',
+    'educa.apps.EducaConfig',
+    'admins.apps.AdminsConfig',
     'games.apps.GamesConfig',
+    'blog.apps.BlogConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles','django.contrib.humanize',
+    'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'easy_thumbnails',
     'rest_framework',
     'tinymce',
@@ -79,7 +86,7 @@ WSGI_APPLICATION = 'appstore.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-"""
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -97,7 +104,7 @@ DATABASES = {
         'PORT': '3306',
     }
 }
-
+"""
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -139,10 +146,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
-
 import os
 
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'appstore/static/')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -151,9 +158,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
-REDIS_DB = 0
+# REDIS_HOST = 'localhost'
+# REDIS_PORT = 6379
+# REDIS_DB = 0
 
 CORS_ALLOW_ALL_ORIGINS = True
 """
@@ -163,6 +170,14 @@ CORS_ORIGIN_WHITELIST = (
 """
 CORS_ALLOW_CREDENTIALS = False
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ENCRYPT_KEY = b'1BMfiB6JN2pFBSfrUa4nsnw36dwhC_tmqrpSNan4wd0='
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # Port for the SMTP server (usually 587 for TLS)
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'encrane04@gmail.com'  # Your email
+EMAIL_HOST_PASSWORD = 'ikzx hqix nvry bcis'  # Your generated password
+

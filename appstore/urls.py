@@ -23,7 +23,9 @@ from django.conf.urls import handler404
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    path('api/games/', include('games.urls')),
+    path('', include('main.urls')),path('admins/', include('admins.urls')),
+    path('api/v1/', include('games.urls')),
+    path('api/v2/', include('blog.urls')),
 ]
 
 if settings.DEBUG:

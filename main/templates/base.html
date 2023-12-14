@@ -1,0 +1,27 @@
+{% load static %}
+{% load thumbnail %}
+{% load humanize %}
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <title>Rigan App Store</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <meta name="title" content="Rigan App Store" />
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="/static/css/fontawesome.css" />
+        <link rel="stylesheet" href="/static/css/sweetalert.min.css" />
+        <link rel="stylesheet" href="/static/css/owl.carousel.min.css" />
+        <link rel="stylesheet" href="/static/css/rigan.css" />
+        <link rel="stylesheet" href="/static/css/style.css" />
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/js/bootstrap.min.js"></script>
+        <script src="/static/js/sweetalert.min.js"></script>
+        <script src="/static/js/owl.carousel.min.js"></script>
+    </head>
+    <body>
+
+        {% block content %}{% endblock %}
+        <script src="/static/js/script.js"></script>
+    </body>
+</html>

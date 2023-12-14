@@ -25,6 +25,7 @@ from django.utils.text import slugify
 import openai
 import random
 import string
+import secrets
 
 def slugify(s):
     s = s.lower().strip()
@@ -944,13 +945,13 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
         password = request.data.get('password').strip()
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            if user.is_active == True:
+            if user.is_active:
                 login(request, user)
                 profile = get_object_or_404(Profile, user=user)
                 profile.online = True
                 profile.save()
-                #apps = App.objects.all()
-                #for app in apps:
+                # apps = App.objects.all()
+                # for app in apps:
                 #    Comment.objects.create(name="WhizzyDoc", app=app, comment="I love this app", star=5)
                 return Response({
                     'status': "success",
@@ -1005,8 +1006,8 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
     @csrf_exempt
     def register(self, request, *args, **kwargs):
         email = request.data.get('email')
-        firstName = sterilize(request.data.get('firstName'))
-        lastName = sterilize(request.data.get('lastName'))
+        firstName = request.data.get('firstName')
+        lastName = request.data.get('lastName')
         phoneNumber = request.data.get('phoneNumber')
         gender = request.data.get('gender')
         bio = request.data.get('bio')
