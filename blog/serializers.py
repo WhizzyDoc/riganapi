@@ -22,7 +22,7 @@ class DatabaseSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['id', 'name', 'email', 'comment', 'reply', 'date']
+        fields = ['id', 'name', 'email', 'comment', 'reply', 'star', 'active', 'date']
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -48,4 +48,4 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ['id', 'title', 'category', 'database', 'frameworks', 'description', 'image',
-                  'live_url', 'github_url', 'created']
+                  'live_url', 'github_url', 'views', 'created']

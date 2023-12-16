@@ -9,8 +9,8 @@ class AuthorAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['author', 'title', 'category', 'database', 'live_url', 'github_url']
-    list_editable = ['category']
+    list_display = ['author', 'title', 'category', 'database', 'live_url', 'github_url', 'views']
+    list_editable = ['category', 'views']
     list_per_page = 20
 
 @admin.register(ProjectCategory)
@@ -33,7 +33,7 @@ class DatabaseAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ['project', 'name', 'email', 'date']
+    list_display = ['project', 'name', 'email', 'star', 'active', 'date']
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):

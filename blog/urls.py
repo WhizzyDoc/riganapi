@@ -10,6 +10,7 @@ router.register('notifications', views.NotificationViewSet)
 router.register('categories', views.CategoryViewSet)
 router.register('frameworks', views.FrameworkViewSet)
 router.register('databases', views.DatabaseViewSet)
+router.register('comments', views.CommentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

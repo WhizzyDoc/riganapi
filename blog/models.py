@@ -56,6 +56,7 @@ class Project(models.Model):
     database = models.ForeignKey(Database, on_delete=models.DO_NOTHING, related_name="projects", null=True, blank=True)
     frameworks = models.ManyToManyField(Framework, related_name="projects", blank=True)
     description = HTMLField(null=True, blank=True)
+    views = models.PositiveIntegerField(verbose_name="Views", default=0)
     image = models.ImageField(upload_to="blogs/images/", null=True, blank=True)
     live_url = models.URLField(null=True, blank=True)
     github_url = models.URLField(null=True, blank=True)
@@ -84,6 +85,8 @@ class Comment(models.Model):
     email = models.EmailField(max_length=150)
     comment = models.TextField()
     reply = models.TextField(blank=True)
+    star = models.PositiveIntegerField(verbose_name="Star Rating", default=5)
+    active = models.BooleanField(default=True)
     date = models.DateTimeField(default=timezone.now)
     def __str__(self):
         return self.comment

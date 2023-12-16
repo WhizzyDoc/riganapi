@@ -422,11 +422,17 @@ class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
     def get_project(self, request, *args, **kwargs):
         id = self.request.query_params.get('project_id')
         key = self.request.query_params.get('api_token')
+        type = self.request.query_params.get('user')
         if id and key:
             try:
                 admin = Author.objects.get(api_token=key)
                 project = Project.objects.get(id=int(id), author=admin)
                 if project is not None:
+                    if type is None or type == "client":
+                        project.views += 1
+                        project.save()
+                    elif type == "admin":
+                        pass
                     return Response({
                         'status': 'success',
                         'data': ProjectSerializer(project).data,
@@ -589,6 +595,254 @@ class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': "error",
                 "message": "Invalid API token"
             })
+
+class CommentViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [AllowAny]
+    @action(detail=False,
+            methods=['get'])
+    def get_comments(self, request, *args, **kwargs):
+        page = self.request.query_params.get('page')
+        per_page = self.request.query_params.get('per_page')
+        query = self.request.query_params.get('search')
+        pro_id = self.request.query_params.get('project_id')
+        order = self.request.query_params.get('sort_by')
+        key = self.request.query_params.get('api_token')
+        try:
+            admin = Author.objects.get(api_token=key)
+            project = Project.objects.get(id=int(pro_id), author=admin)
+            if page is None:
+                page = 1
+            else:
+                page = int(page)
+            if per_page is None:
+                per_page = 10
+            else:
+                per_page = int(per_page)
+            if query is None:
+                query = ""
+            if order is  None:
+                order = '-date'
+            start = (page - 1) * per_page
+            stop = page * per_page
+            total_items = 0
+            total_items = Comment.objects.filter(project=project).filter(
+                            Q(name__icontains=query) | Q(email__icontains=query) |
+                            Q(comment__icontains=query) | Q(reply__icontains=query)).count()
+            comments = Comment.objects.filter(project=project).filter(
+                            Q(name__icontains=query) | Q(email__icontains=query) |
+                            Q(comment__icontains=query) | Q(reply__icontains=query)).order_by(order)[start:stop]
+            total_pages = math.ceil(total_items/per_page)
+            if comments.exists():
+                return Response({
+                    'status': 'success',
+                    'project': ProjectSerializer(project).data,
+                    'data': [CommentSerializer(pos).data for pos in comments],
+                    'message': 'comment list retrieved',
+                    'page_number': page,
+                    "list_per_page": per_page,
+                    "total_pages": total_pages,
+                    "total_items": total_items,
+                    "search_query": query
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No comments found',
+                    'project': ProjectSerializer(project).data,
+                    'page_number': page,
+                    "list_per_page": per_page,
+                    "total_pages": total_pages,
+                    "total_items": total_items,
+                    "search_query": query
+                })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': 'error',
+                'message': 'Error getting comment list'
+            })
+
+    @action(detail=False,
+            methods=['get'])
+    def get_project(self, request, *args, **kwargs):
+        id = self.request.query_params.get('project_id')
+        key = self.request.query_params.get('api_token')
+        type = self.request.query_params.get('user')
+        if id and key:
+            try:
+                admin = Author.objects.get(api_token=key)
+                project = Project.objects.get(id=int(id), author=admin)
+                if project is not None:
+                    if type is None or type == "client":
+                        project.views += 1
+                        project.save()
+                    elif type == "admin":
+                        pass
+                    return Response({
+                        'status': 'success',
+                        'data': ProjectSerializer(project).data,
+                        'message': 'project details retrieved'
+                    })
+                else:
+                    return Response({
+                        'status': 'success',
+                        'message': 'Invalid project ID'
+                    })
+            except:
+                return Response({
+                    'status': 'error',
+                    'message': 'Invalid project ID or API Token'
+                })
+        else:
+            return Response({
+                'status': 'success',
+                'message': 'Invalid project ID or API Token'
+            })
+
+    @action(detail=False,
+            methods=['post'])
+    def create_project(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        title = request.POST.get('title')
+        db_id = request.POST.get('database_id')
+        cat_id = request.POST.get('category_id')
+        url = request.POST.get('url')
+        github = request.POST.get('github')
+        des = request.POST.get('description')
+        frames_ids = request.POST.getlist('frame_ids', [])
+        image = None
+        if request.FILES:
+            image = request.FILES.get('image')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                # check if position does not exist
+                try:
+                    project = Project.objects.get(title=title, author=admin)
+                    return Response({
+                        'status': "error",
+                        "message": "project with the same title already exists!"
+                    })
+                except:
+                    category = ProjectCategory.objects.get(id=int(cat_id))
+                    database = Database.objects.get(id=int(db_id))
+                    new_pro = Project(author=admin, title=title, live_url=url, github_url=github,
+                                      description=des, image=image, category=category, database=database)
+                    new_pro.save()
+                    f_ids = [int(f_id) for f_id in frames_ids]
+                    frames = Framework.objects.filter(id__in=f_ids)
+                    for f in frames:
+                        new_pro.frameworks.add(f)
+                        new_pro.save()
+                    return Response({
+                        'status': "success",
+                        "message": "project created sucessfully",
+                        "data": ProjectSerializer(new_pro).data,
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not authorized"
+                })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
+
+    @action(detail=False,
+            methods=['post'])
+    def edit_project(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('project_id')
+        title = request.POST.get('title')
+        db_id = request.POST.get('database_id')
+        cat_id = request.POST.get('category_id')
+        url = request.POST.get('url')
+        github = request.POST.get('github')
+        des = request.POST.get('description')
+        frames_ids = request.POST.getlist('frame_ids', [])
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    project = Project.objects.get(id=int(id), author=admin)
+                    category = ProjectCategory.objects.get(id=int(cat_id))
+                    database = Database.objects.get(id=int(db_id))
+                    project.title = title
+                    project.category = category
+                    project.database = database
+                    project.live_url = url
+                    project.github_url = github
+                    project.description = des
+                    project.save()
+                    if request.FILES:
+                        project.image = request.FILES.get('image')
+                        project.save()
+                    f_ids = [int(f_id) for f_id in frames_ids]
+                    frames = Framework.objects.filter(id__in=f_ids)
+                    for f in project.frameworks.all():
+                        project.frameworks.remove(f)
+                        project.save()
+                    for f in frames:
+                        project.frameworks.add(f)
+                        project.save()
+                    return Response({
+                        'status': "success",
+                        "message": "project edited sucessfully",
+                        "data": ProjectSerializer(project).data,
+                    })
+                except Exception as e:
+                    print(e)
+                    return Response({
+                        "status": "error",
+                        "message": f"project with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not authorized"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
+
+    @action(detail=False,
+            methods=['post'])
+    def delete_project(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('project_id')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    project = Project.objects.get(id=int(id), author=admin)
+                    project.delete()
+                    return Response({
+                        'status': "success",
+                        "message": f"project \'{project.title}\' deleted sucessfully",
+                    })
+                except:
+                    return Response({
+                        "status": "error",
+                        "message": f"project with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
+
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Notification.objects.all()
