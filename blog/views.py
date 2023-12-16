@@ -69,6 +69,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
         email = request.POST.get('email')
         f_name = request.POST.get('first_name')
         l_name = request.POST.get('last_name')
+        site_name = request.POST.get('site_name')
         phone_number = request.POST.get('phone_number')
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -106,7 +107,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
                     #print('hello')
                     # create a new profile
                     new_profile = Author(user=new_user, email=email, first_name=f_name, last_name=l_name, api_token=api_key,
-                                        phone_number=phone_number)
+                                        phone_number=phone_number, site_title=site_name)
                     #print('he')
                     new_profile.save()
                     confirmation_email(email, f_name)
@@ -297,11 +298,13 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
         email = request.POST.get('email')
         f_name = request.POST.get('fname')
         l_name = request.POST.get('lname')
+        site_name = request.POST.get('site_name')
         phone = request.POST.get('phone')
         github = request.POST.get('github')
         linkedin = request.POST.get('linkedin')
         facebook = request.POST.get('facebook')
         twitter = request.POST.get('twitter')
+        insta = request.POST.get('instagram')
         about = request.POST.get('about')
         image = request.FILES.get('image')
         try:
@@ -316,6 +319,8 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
                 admin.linkedin = linkedin
                 admin.twitter = twitter
                 admin.facebook = facebook
+                admin.instagram = insta
+                admin.site_title = site_name
                 admin.bio = about
                 admin.save()
                 if image:
@@ -1065,3 +1070,32 @@ class DatabaseViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'Error getting database list'
             })
+
+class SkillViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer
+    permission_classes = [AllowAny]
+    @action(detail=False,
+            methods=['get'])
+    def get_skills(self, request, *args, **kwargs):
+        key = self.request.query_params.get('api_token')
+        try:
+            admin = Author.objects.get(api_token=key)
+            skills = Skill.objects.filter(owner=admin)
+            if skills.exists():
+                return Response({
+                    'status': 'success',
+                    'data': [SkillSerializer(pos).data for pos in skills],
+                    'message': 'skills list retrieved'
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No skill found'
+                })
+        except:
+            return Response({
+                'status': 'error',
+                'message': 'Error getting skills list'
+            })
+

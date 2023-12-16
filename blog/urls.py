@@ -5,6 +5,7 @@ from . import views
 router = routers.DefaultRouter()
 router.register('author', views.AuthorViewSet)
 router.register('projects', views.ProjectViewSet)
+router.register('skills', views.SkillViewSet)
 router.register('messages', views.ContactViewSet)
 router.register('notifications', views.NotificationViewSet)
 router.register('categories', views.CategoryViewSet)

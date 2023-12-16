@@ -18,6 +18,11 @@ class DatabaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Database
         fields = ['id', 'title']
+        
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ['id', 'title', 'description', 'image']
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,8 +43,8 @@ class AuthorSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     class Meta:
         model = Author
-        fields = ['id', 'user', 'first_name', 'last_name', 'email', 'phone_number',
-                  'github', 'linkedin', 'twitter', 'facebook', 'bio', 'api_token', 'image']
+        fields = ['id', 'user', 'first_name', 'last_name', 'email', 'phone_number', 'site_title',
+                  'github', 'linkedin', 'twitter', 'facebook', 'instagram', 'bio', 'api_token', 'image', 'site_logo']
 
 class ProjectSerializer(serializers.ModelSerializer):
     category = ProjectCategorySerializer(many=False, read_only=True)
@@ -49,3 +54,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'title', 'category', 'database', 'frameworks', 'description', 'image',
                   'live_url', 'github_url', 'views', 'created']
+
+class ResumeSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(many=False, read_only=True)
+    projects = ProjectSerializer(many=True, read_only=True)
+    skills = SkillSerializer(many=True, read_only=True)
+    class Meta:
+        model = Resume
+        fields = ['id', 'author', 'projects', 'skills', 'description', 'url', 'created']
