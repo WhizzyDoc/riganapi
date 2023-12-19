@@ -19,6 +19,22 @@ class SkillAdmin(admin.ModelAdmin):
     list_editable = ['title']
     list_per_page = 20
 
+@admin.register(Interest)
+class InterestAdmin(admin.ModelAdmin):
+    list_display = ['owner', 'title']
+    list_editable = ['title']
+    list_per_page = 20
+
+@admin.register(Experience)
+class ExperienceAdmin(admin.ModelAdmin):
+    list_display = ['owner', 'company', 'job_title', 'start_date', 'end_date']
+    list_per_page = 20
+
+@admin.register(Education)
+class EducationAdmin(admin.ModelAdmin):
+    list_display = ['owner', 'institution', 'qualification', 'grade', 'start_date', 'end_date']
+    list_per_page = 20
+
 @admin.register(ProjectCategory)
 class ProjectCategoryAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug']

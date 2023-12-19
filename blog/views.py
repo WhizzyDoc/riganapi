@@ -298,8 +298,11 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
         email = request.POST.get('email')
         f_name = request.POST.get('fname')
         l_name = request.POST.get('lname')
-        site_name = request.POST.get('site_name')
+        site_name = request.POST.get('site-name')
         phone = request.POST.get('phone')
+        address = request.POST.get('address')
+        dob = request.POST.get('dob')
+        work = request.POST.get('work')
         github = request.POST.get('github')
         linkedin = request.POST.get('linkedin')
         facebook = request.POST.get('facebook')
@@ -315,6 +318,9 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
                 admin.first_name = f_name
                 admin.last_name = l_name
                 admin.phone_number = phone
+                admin.address = address
+                admin.dob = dob
+                admin.work_description = work
                 admin.github = github
                 admin.linkedin = linkedin
                 admin.twitter = twitter
@@ -421,13 +427,39 @@ class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'Error getting project list'
             })
+    
+    @action(detail=False,
+            methods=['get'])
+    def get_resume_projects(self, request, *args, **kwargs):
+        key = self.request.query_params.get('api_token')
+        try:
+            admin = Author.objects.get(api_token=key)
+            projects = Project.objects.filter(author=admin, resume_project=True)
+            if projects.exists():
+                return Response({
+                    'status': 'success',
+                    'data': [ProjectSerializer(pos).data for pos in projects],
+                    'message': 'project list retrieved'
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No project found'
+                })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': 'error',
+                'message': 'Error getting project list'
+            })
 
+    
     @action(detail=False,
             methods=['get'])
     def get_project(self, request, *args, **kwargs):
         id = self.request.query_params.get('project_id')
         key = self.request.query_params.get('api_token')
-        type = self.request.query_params.get('user')
+        type = self.request.query_params.get('type')
         if id and key:
             try:
                 admin = Author.objects.get(api_token=key)
@@ -1097,5 +1129,61 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({
                 'status': 'error',
                 'message': 'Error getting skills list'
+            })
+
+class InterestViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Interest.objects.all()
+    serializer_class = InterestSerializer
+    permission_classes = [AllowAny]
+    @action(detail=False,
+            methods=['get'])
+    def get_interests(self, request, *args, **kwargs):
+        key = self.request.query_params.get('api_token')
+        try:
+            admin = Author.objects.get(api_token=key)
+            ints = Interest.objects.filter(owner=admin)
+            if ints.exists():
+                return Response({
+                    'status': 'success',
+                    'data': [InterestSerializer(pos).data for pos in ints],
+                    'message': 'interests list retrieved'
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No interest found'
+                })
+        except:
+            return Response({
+                'status': 'error',
+                'message': 'Error getting interests list'
+            })
+
+class EducationViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Education.objects.all()
+    serializer_class = EducationSerializer
+    permission_classes = [AllowAny]
+    @action(detail=False,
+            methods=['get'])
+    def get_education(self, request, *args, **kwargs):
+        key = self.request.query_params.get('api_token')
+        try:
+            admin = Author.objects.get(api_token=key)
+            edu = Education.objects.filter(owner=admin)
+            if edu.exists():
+                return Response({
+                    'status': 'success',
+                    'data': [EducationSerializer(pos).data for pos in edu],
+                    'message': 'education list retrieved'
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No education found'
+                })
+        except:
+            return Response({
+                'status': 'error',
+                'message': 'Error getting education list'
             })
 

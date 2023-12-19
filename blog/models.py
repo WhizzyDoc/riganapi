@@ -17,6 +17,9 @@ class Author(models.Model):
     instagram = models.URLField(blank=True, default="https://instagram.com/")
     site_title = models.CharField(max_length=250, blank=True, null=True)
     bio = HTMLField(blank=True)
+    address = models.CharField(max_length=1000, null=True, blank=True)
+    work_description = models.TextField(null=True, blank=True)
+    dob = models.DateField(null=True, blank=True)
     api_token = models.CharField(max_length=250, verbose_name="API Key", blank=True)
     image = models.ImageField(upload_to="portfolio/author/images/", blank=True)
     site_logo = models.ImageField(upload_to="portfolio/site/images/", blank=True, null=True)
@@ -27,6 +30,35 @@ class Author(models.Model):
 
     class Meta:
         ordering = ['first_name']
+
+class Education(models.Model):
+    owner = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="education", null=True, blank=True)
+    qualification = models.CharField(max_length=250, blank=True)
+    grade = models.CharField(max_length=250, blank=True)
+    institution = models.CharField(max_length=250, blank=True)
+    start_date = models.DateField(blank=True)
+    end_date = models.DateField(blank=True)
+    def __str__(self):
+        return f'{self.owner.first_name} - {self.institution}'
+
+class Experience(models.Model):
+    owner = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="experience", null=True, blank=True)
+    company = models.CharField(max_length=250, blank=True)
+    job_title = models.CharField(max_length=250, blank=True)
+    location = models.CharField(max_length=250, blank=True)
+    description = models.TextField(blank=True)
+    start_date = models.DateField(blank=True)
+    end_date = models.DateField(blank=True)
+    def __str__(self):
+        return f'{self.owner.first_name} - {self.institution}'
+
+class Interest(models.Model):
+    owner = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="interests", null=True, blank=True)
+    title = models.CharField(max_length=250, null=True, blank=True)
+    def __str__(self):
+        return self.title
+    class Meta:
+        ordering = ['title']
 
 class ProjectCategory(models.Model):
     title = models.CharField(max_length=250, null=True, blank=True)
@@ -68,7 +100,9 @@ class Project(models.Model):
     category = models.ForeignKey(ProjectCategory, on_delete=models.DO_NOTHING, related_name="projects", null=True, blank=True)
     database = models.ForeignKey(Database, on_delete=models.DO_NOTHING, related_name="projects", null=True, blank=True)
     frameworks = models.ManyToManyField(Framework, related_name="projects", blank=True)
+    short_description = models.TextField(null=True, blank=True)
     description = HTMLField(null=True, blank=True)
+    resume_project = models.BooleanField(default=False)
     views = models.PositiveIntegerField(verbose_name="Views", default=0)
     image = models.ImageField(upload_to="blogs/images/", null=True, blank=True)
     live_url = models.URLField(null=True, blank=True)

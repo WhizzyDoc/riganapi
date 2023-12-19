@@ -39,12 +39,27 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ['id', 'title', 'note', 'date']
 
+class EducationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Education
+        fields = ['id', 'qualification', 'grade', 'institution', 'start_date', 'end_date']
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Experience
+        fields = ['id', 'company', 'job_title', 'location', 'description', 'start_date', 'end_date']
+
+class InterestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interest
+        fields = ['id', 'title']
+
 class AuthorSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     class Meta:
         model = Author
-        fields = ['id', 'user', 'first_name', 'last_name', 'email', 'phone_number', 'site_title',
-                  'github', 'linkedin', 'twitter', 'facebook', 'instagram', 'bio', 'api_token', 'image', 'site_logo']
+        fields = ['id', 'user', 'first_name', 'last_name', 'email', 'phone_number', 'site_title', 'work_description', 'dob',
+                  'github', 'linkedin', 'twitter', 'facebook', 'instagram', 'bio', 'api_token', 'image', 'site_logo', 'address']
 
 class ProjectSerializer(serializers.ModelSerializer):
     category = ProjectCategorySerializer(many=False, read_only=True)
@@ -53,7 +68,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ['id', 'title', 'category', 'database', 'frameworks', 'description', 'image',
-                  'live_url', 'github_url', 'views', 'created']
+                  'short_description', 'live_url', 'github_url', 'views', 'created']
 
 class ResumeSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(many=False, read_only=True)
