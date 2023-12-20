@@ -50,7 +50,7 @@ class Experience(models.Model):
     start_date = models.DateField(blank=True)
     end_date = models.DateField(blank=True)
     def __str__(self):
-        return f'{self.owner.first_name} - {self.institution}'
+        return f'{self.owner.first_name} - {self.company}'
 
 class Interest(models.Model):
     owner = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="interests", null=True, blank=True)
@@ -102,7 +102,7 @@ class Project(models.Model):
     frameworks = models.ManyToManyField(Framework, related_name="projects", blank=True)
     short_description = models.TextField(null=True, blank=True)
     description = HTMLField(null=True, blank=True)
-    resume_project = models.BooleanField(default=False)
+    resume_project = models.BooleanField(default=True)
     views = models.PositiveIntegerField(verbose_name="Views", default=0)
     image = models.ImageField(upload_to="blogs/images/", null=True, blank=True)
     live_url = models.URLField(null=True, blank=True)

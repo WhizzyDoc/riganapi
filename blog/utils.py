@@ -20,7 +20,7 @@ def send_password_email(receiver, name, new_password):
     send_mail(subject, message, from_email, recipient_list, fail_silently, html_message=html_message)
 
 def confirmation_email(receiver, name):
-    subject = f"KosmosHR Confirm Email"
+    subject = f"Rigan API Confirm Email"
     message = ''
     from_email = 'encrane04@gmail.com'  # Sender's email
     recipient_list = [receiver]  # List of recipient emails

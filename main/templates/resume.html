@@ -1,0 +1,269 @@
+{% load static %}
+{% load thumbnail %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rigan API - Resume</title>
+    <meta name="title" content="Rigan App Store" />
+    <style>
+        body {
+            width: 230mm;
+            background: rgb(204,204,204);
+            margin: 0 auto;
+            font-size: 12pt;
+            font-family: Times New Roman;
+            height: 100%;
+            padding: 0;
+            max-width: auto;
+            overflow-x: auto;
+        }
+        /* Resume */
+.main-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 10mm auto;
+  background: #fff;
+  box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+}
+@media screen and (max-width:800px) {
+  .main-page {
+    transform: scale(0.8);
+    margin-top: -50px;
+  }
+}
+@media screen and (max-width:600px) {
+  .main-page {
+    transform: scale(0.6);
+    margin-top: -200px;
+    margin-left: -150px;
+  }
+}
+@media screen and (max-width:500px) {
+  .main-page {
+    transform: scale(0.5);
+    margin-top: -250px;
+    margin-left: -170px;
+  }
+}
+@media screen and (max-width:400px) {
+  .main-page {
+    transform: scale(0.4);
+    margin-top: -300px;
+    margin-left: -230px;
+  }
+}
+.sub-page {
+  padding: 1cm;
+  min-height: 297mm;
+}
+.page-head img {
+  width: 30mm;
+  height: 30mm;
+  border-radius: 4mm;
+}
+.res-header {
+  background: lightblue;
+  padding: 8px 12px;
+  width: fit-content;
+  border-radius: 0 20px 0 0;
+  color: black !important;
+  margin-bottom: 0;
+}
+.res-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.btn {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    color: #fff;
+}
+.btn-success {background: green}
+.btn-primary {background: blue}
+.res-content {
+  border-top: 1px solid lightblue;
+  margin-top:0;  
+  padding: 5px;
+}
+.res-content ul {
+  padding-left:30px;
+}
+@page {
+  size: A4;
+  margin: 0;
+}
+@media print {
+  html, body {
+    width: 210mm;
+    height: 297mm;
+  }
+  .res-btn {display:none}
+  .main-page {
+    margin: 0;
+    background: #fff;
+    border: initial;
+    border-radius: initial;
+    width: initial;
+    min-height: initial;
+    box-shadow: initial;
+    background: initial;
+    page-break-after: always;
+  }
+}
+.page-head {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.h2  {font-size: 36px;}
+.h4 {font-size: 18px}
+.w-bold {font-weight: 500}
+.w-bold-x {font-weight: 600}
+.w-bold-xx {font-weight: 800}
+.w-text-blue {color: blue}
+.w-padding {padding: 10px;}
+.w-padding-left {padding-left: 10px;}
+.w-margin-bottom {margin-bottom: 10px;}
+.res-pro > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+    </style>
+</head>
+<body>
+    <!-- for resume -->
+    <div class="main-page">
+      <div class="sub-page">
+        <div class="page-head">
+          <img class="res-img" src="{% if admin.image %}{{ admin.image.url }}{% else %}./static/image/avatar.png{% endif %}" alt="" />
+          <div class="w-padding">
+            <div class="h2 w-bold-xx w-text-blue res-name">{{ admin.first_name }} {{ admin.last_name }}</div>
+            <div class="p w-bold res-address">{{ admin.address }}</div>
+            <div class="p w-bold"><span class="res-email">{{ admin.email }}</span>&nbsp;|&nbsp;<span class="res-phone">{{ admin.phone_number }}</span>&nbsp;|&nbsp;DoB: <span class="res-dob">{{ admin.dob }}</span></div>
+          </div>
+        </div>
+        <p class="w-margin-bottom w-padding-bottom"><span class="res-bio">{{ admin.work_description }}</span></p>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">Experience</div>
+          <div class="res-content">
+            {% for e in experience %}
+            <div class="res-pro">
+                <div class="">
+                  <div class="w-bold-x">{{ e.company }}</div>
+                  <div>{{ e.start_date }} - {{ e.end_date }}</div>
+                </div>
+                <p class="w-padding-left">{{ e.job_title }} - {{ e.description }}</p>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">Education</div>
+          <div class="res-content res-edu-content">
+            {% for e in education %}
+            <div class="res-pro">
+                <div class="">
+                  <div class="w-bold-x">{{ e.institution }}</div>
+                  <div>{{ e.start_date }} - {{ e.end_date }}</div>
+                </div>
+                <p class="w-padding-left">{{ e.qualification }} - {{ e.grade }}</p>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">Projects</div>
+          <div class="res-content res-pro-content">
+            {% for p in projects %}
+            <div class="res-pro">
+                <div class="">
+                  <div class="w-bold-x">{{ p.title }}</div>
+                  <div>{{ p.created }}</div>
+                </div>
+                <ul>
+                  <li>{{ p.short_description }}</li>
+                </ul>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">Awards</div>
+          <div class="res-content"></div>
+        </section>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">Key Skills</div>
+          <div class="res-content">
+          <ul class="res-skill-content">
+            {% for s in skills %}
+            <li>{{ s.title }} - {{ s.description }} </li>
+            {% endfor %}
+          </ul>
+          </div>
+        </section>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">Interests</div>
+          <div class="res-content">
+            <ul class="res-int-content">
+                {% for i in interests %}
+                <li>{{ i.title }}</li>
+                {% endfor %}
+            </ul>
+          </div>
+        </section>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">Social Media</div>
+          <div class="res-content res-pro">
+            <div class="">
+              <div class="w-bold-x">- LinkedIn</div>
+              <a href="" id="res-linkedin">{{ admin.linkedin }}</a>
+            </div>
+            <div class="w-flex w-flex-between w-align-center">
+              <div class="w-bold-x">- Github</div>
+              <a href="" id="res-github">{{ admin.github }}</a>
+            </div>
+            <div class="w-flex w-flex-between w-align-center">
+              <div class="w-bold-x">- Twitter</div>
+              <a href="" id="res-twitter">{{ admin.twitter }}</a>
+            </div>
+            <div class="w-flex w-flex-between w-align-center">
+              <div class="w-bold-x">- Facebook</div>
+              <a href="" id="res-facebook">{{ admin.facebook }}</a>
+            </div>
+            <div class="w-flex w-flex-between w-align-center">
+              <div class="w-bold-x">- Instagram</div>
+              <a href="" id="res-instagram">{{ admin.instagram }}</a>
+            </div>
+          </div>
+        </section>
+        <section class="res-section w-margin-bottom">
+          <div class="res-header w-bold-x h4 w-text-blue">References</div>
+          <div class="res-content"></div>
+        </section>
+      </div>
+    </div>
+    <div class="res-btn w-padding-bottom w-flex w-flex-center w-align-center">
+      <button class="w-margin-right w-margin-bottom btn btn-primary btn-print"><i class="fa fa-print"></i> Print</button>
+      <button class="w-margin-right w-margin-bottom btn btn-success btn-download"><i class="fa fa-download"></i> Download As PDF</button>
+    </div>
+    <script>
+        let printd = document.querySelector('.btn-print')
+        let down = document.querySelector('.btn-download')
+        printd.onclick = function() {
+            window.print();
+        }
+        down.onclick = function() {
+            let page = document.querySelector('.main-page')
+            window.download();
+        }
+    </script>
+</body>
+</html>

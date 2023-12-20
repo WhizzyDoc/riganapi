@@ -57,7 +57,6 @@ def is_valid_username(username):
         return True
     else:
         return False
-    
 
 class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Author.objects.all()
@@ -347,7 +346,6 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': "error",
                 "message": "Invalid API token"
             })
-
 
 class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Project.objects.all()
@@ -880,7 +878,6 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
                 "message": "Invalid API token"
             })
 
-
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
@@ -1130,6 +1127,25 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'Error getting skills list'
             })
+    @action(detail=False,
+            methods=['post'])
+    def add_skill(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        title = request.POST.get('title')
+        des = request.POST.get('description')
+        try:
+            admin = Author.objects.get(api_token=key)
+            Skill.objects.create(owner=admin, title=title, description=des)
+            return Response({
+                'status': 'success',
+                'message': 'skill added successfully'
+            })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': 'error',
+                'message': 'error while adding skill'
+            })
 
 class InterestViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Interest.objects.all()
@@ -1158,6 +1174,24 @@ class InterestViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'Error getting interests list'
             })
+    @action(detail=False,
+            methods=['post'])
+    def add_interest(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        title = request.POST.get('title')
+        try:
+            admin = Author.objects.get(api_token=key)
+            Interest.objects.create(owner=admin, title=title)
+            return Response({
+                'status': 'success',
+                'message': 'interest added successfully'
+            })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': 'error',
+                'message': 'error while adding interest'
+            })
 
 class EducationViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Education.objects.all()
@@ -1185,5 +1219,78 @@ class EducationViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({
                 'status': 'error',
                 'message': 'Error getting education list'
+            })
+    @action(detail=False,
+            methods=['post'])
+    def add_education(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        inst = request.POST.get('institution')
+        qua = request.POST.get('qualification')
+        grade = request.POST.get('grade')
+        start = request.POST.get('start')
+        end = request.POST.get('end')
+        try:
+            admin = Author.objects.get(api_token=key)
+            Education.objects.create(owner=admin, qualification=qua, institution=inst, grade=grade, start_date=start, end_date=end)
+            return Response({
+                'status': 'success',
+                'message': 'education added successfully'
+            })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': 'error',
+                'message': 'error while adding education'
+            })
+
+class ExperienceViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Experience.objects.all()
+    serializer_class = ExperienceSerializer
+    permission_classes = [AllowAny]
+    @action(detail=False,
+            methods=['get'])
+    def get_experience(self, request, *args, **kwargs):
+        key = self.request.query_params.get('api_token')
+        try:
+            admin = Author.objects.get(api_token=key)
+            edu = Experience.objects.filter(owner=admin)
+            if edu.exists():
+                return Response({
+                    'status': 'success',
+                    'data': [ExperienceSerializer(pos).data for pos in edu],
+                    'message': 'experience list retrieved'
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No experience found'
+                })
+        except:
+            return Response({
+                'status': 'error',
+                'message': 'Error getting experience list'
+            })
+    @action(detail=False,
+            methods=['post'])
+    def add_experience(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        comp = request.POST.get('company')
+        title = request.POST.get('job_title')
+        loc = request.POST.get('location')
+        des = request.POST.get('description')
+        start = request.POST.get('start')
+        end = request.POST.get('end')
+        try:
+            admin = Author.objects.get(api_token=key)
+            Experience.objects.create(owner=admin, company=comp, job_title=title, location=loc, description=des, start_date=start, end_date=end)
+            return Response({
+                'status': 'success',
+                'message': 'experience added successfully'
+            })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': 'error',
+                'message': 'error while adding experience'
             })
 
