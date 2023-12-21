@@ -44,6 +44,11 @@ class EducationSerializer(serializers.ModelSerializer):
         model = Education
         fields = ['id', 'qualification', 'grade', 'institution', 'start_date', 'end_date']
 
+class ReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reference
+        fields = ['id', 'company', 'job_title', 'name', 'phone_number', 'email']
+
 class ExperienceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Experience

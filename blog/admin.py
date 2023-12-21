@@ -30,6 +30,11 @@ class ExperienceAdmin(admin.ModelAdmin):
     list_display = ['owner', 'company', 'job_title', 'start_date', 'end_date']
     list_per_page = 20
 
+@admin.register(Reference)
+class ReferenceAdmin(admin.ModelAdmin):
+    list_display = ['owner', 'company', 'job_title', 'name', 'phone_number', 'email']
+    list_per_page = 20
+
 @admin.register(Education)
 class EducationAdmin(admin.ModelAdmin):
     list_display = ['owner', 'institution', 'qualification', 'grade', 'start_date', 'end_date']

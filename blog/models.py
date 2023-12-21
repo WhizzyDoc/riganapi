@@ -78,6 +78,18 @@ class Skill(models.Model):
     class Meta:
         ordering = ['title']
 
+class Reference(models.Model): 
+    owner = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="references", null=True, blank=True)
+    name = models.CharField(max_length=250, blank=True)
+    job_title = models.CharField(max_length=250, blank=True)
+    company = models.CharField(max_length=250, blank=True)
+    phone_number = models.CharField(max_length=250, blank=True)
+    email = models.EmailField(blank=True)
+    def __str__(self):
+        return self.name
+    class Meta:
+        ordering = ['name']
+
 class Framework(models.Model):
     title = models.CharField(max_length=250, null=True, blank=True)
     slug = models.SlugField(null=True, blank=True, unique=True)

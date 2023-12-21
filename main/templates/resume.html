@@ -188,16 +188,10 @@
                   <div class="w-bold-x">{{ p.title }}</div>
                   <div>{{ p.created }}</div>
                 </div>
-                <ul>
-                  <li>{{ p.short_description }}</li>
-                </ul>
+                <div style="padding-left:10px">{{ p.description | safe }}</div>
             </div>
             {% endfor %}
           </div>
-        </section>
-        <section class="res-section w-margin-bottom">
-          <div class="res-header w-bold-x h4 w-text-blue">Awards</div>
-          <div class="res-content"></div>
         </section>
         <section class="res-section w-margin-bottom">
           <div class="res-header w-bold-x h4 w-text-blue">Key Skills</div>
@@ -246,7 +240,16 @@
         </section>
         <section class="res-section w-margin-bottom">
           <div class="res-header w-bold-x h4 w-text-blue">References</div>
-          <div class="res-content"></div>
+          <div class="res-content">
+            <ul class="res-int-content">
+                {% for r in reference %}
+                <li style="margin-bottom:5px">
+                    <b>{{ r.name }} - {{ r.job_title }}, {{ r.company }}</b><br>
+                    {{ r.phone_number }} | {{ r.email }}
+                </li>
+                {% endfor %}
+            </ul>
+          </div>
         </section>
       </div>
     </div>

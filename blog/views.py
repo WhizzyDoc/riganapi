@@ -1294,3 +1294,54 @@ class ExperienceViewSet(viewsets.ReadOnlyModelViewSet):
                 'message': 'error while adding experience'
             })
 
+class ReferenceViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Reference.objects.all()
+    serializer_class = ReferenceSerializer
+    permission_classes = [AllowAny]
+    @action(detail=False,
+            methods=['get'])
+    def get_reference(self, request, *args, **kwargs):
+        key = self.request.query_params.get('api_token')
+        try:
+            admin = Author.objects.get(api_token=key)
+            ref = Reference.objects.filter(owner=admin)
+            if ref.exists():
+                return Response({
+                    'status': 'success',
+                    'data': [ReferenceSerializer(pos).data for pos in ref],
+                    'message': 'reference list retrieved'
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No reference found'
+                })
+        except:
+            return Response({
+                'status': 'error',
+                'message': 'Error getting reference list'
+            })
+    @action(detail=False,
+            methods=['post'])
+    def add_reference(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        comp = request.POST.get('company')
+        title = request.POST.get('job_title')
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        try:
+            admin = Author.objects.get(api_token=key)
+            Reference.objects.create(owner=admin, company=comp, job_title=title, name=name, phone_number=phone, email=email)
+            return Response({
+                'status': 'success',
+                'message': 'reference added successfully'
+            })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': 'error',
+                'message': 'error while adding reference'
+            })
+
+

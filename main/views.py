@@ -23,6 +23,7 @@ def resume(request, username):
         skills = Skill.objects.filter(owner=admin)
         experience = Experience.objects.filter(owner=admin)
         interests = Interest.objects.filter(owner=admin)
+        reference = Reference.objects.filter(owner=admin)
         projects = Project.objects.filter(author=admin, resume_project=True)
         return render(request, 'resume.html', {
             'admin': admin,
@@ -31,6 +32,7 @@ def resume(request, username):
             'skills': skills,
             'interests': interests,
             'experience':experience,
+            'reference': reference,
         })
     except Exception as e:
         print(e)
