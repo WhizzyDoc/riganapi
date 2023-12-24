@@ -170,9 +170,10 @@ CORS_ORIGIN_WHITELIST = (
 """
 CORS_ALLOW_CREDENTIALS = False
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ENCRYPT_KEY = b'1BMfiB6JN2pFBSfrUa4nsnw36dwhC_tmqrpSNan4wd0='
+"""
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587  # Port for the SMTP server (usually 587 for TLS)
@@ -180,4 +181,4 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'encrane04@gmail.com'  # Your email
 EMAIL_HOST_PASSWORD = 'ikzx hqix nvry bcis'  # Your generated password
-
+"""

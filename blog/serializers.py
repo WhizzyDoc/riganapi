@@ -63,7 +63,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     class Meta:
         model = Author
-        fields = ['id', 'user', 'first_name', 'last_name', 'email', 'phone_number', 'site_title', 'work_description', 'dob',
+        fields = ['id', 'user', 'first_name', 'last_name', 'email', 'phone_number', 'site_title', 'work_description', 'intro', 'dob',
                   'github', 'linkedin', 'twitter', 'facebook', 'instagram', 'bio', 'api_token', 'image', 'site_logo', 'address']
 
 class ProjectSerializer(serializers.ModelSerializer):

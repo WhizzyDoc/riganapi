@@ -17,6 +17,7 @@ class Author(models.Model):
     instagram = models.URLField(blank=True, default="https://instagram.com/")
     site_title = models.CharField(max_length=250, blank=True, null=True)
     bio = HTMLField(blank=True)
+    intro = HTMLField(blank=True, default="")
     address = models.CharField(max_length=1000, null=True, blank=True)
     work_description = models.TextField(null=True, blank=True)
     dob = models.DateField(null=True, blank=True)

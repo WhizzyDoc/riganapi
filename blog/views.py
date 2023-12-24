@@ -152,7 +152,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
                 user.set_password(token)
                 user.save()
                 # send email
-                send_password_email(email, user.first_name, token)
+                send_password_email(email, user.first_name, user.username, token)
                 return Response({
                     'status': 'success',
                     'message': f'Password reset instructions has been sent to {email}'
@@ -180,11 +180,11 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
                 'message': f"Invalid new password combination",
             })
         try:
-            profile = Profile.objects.get(api_token=key)
-            admin = profile.user
-            if admin_group in admin.groups.all():
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
                 try:
-                    user = authenticate(request, username=admin.username, password=old_password)
+                    user_p = admin.user
+                    user = authenticate(request, username=user_p.username, password=old_password)
                     if user is not None:
                         user.set_password(new_password)
                         user.save()
@@ -205,7 +205,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 return Response({
                     'status': "error",
-                    "message": "User is not authorized"
+                    "message": "User not found"
                 })
         except:
             return Response({
@@ -302,6 +302,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
         address = request.POST.get('address')
         dob = request.POST.get('dob')
         work = request.POST.get('work')
+        intro = request.POST.get('intro')
         github = request.POST.get('github')
         linkedin = request.POST.get('linkedin')
         facebook = request.POST.get('facebook')
@@ -327,6 +328,7 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
                 admin.instagram = insta
                 admin.site_title = site_name
                 admin.bio = about
+                admin.intro = intro
                 admin.save()
                 if image:
                     admin.image = image
@@ -700,86 +702,39 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
             })
 
     @action(detail=False,
-            methods=['get'])
-    def get_project(self, request, *args, **kwargs):
-        id = self.request.query_params.get('project_id')
-        key = self.request.query_params.get('api_token')
-        type = self.request.query_params.get('user')
-        if id and key:
-            try:
-                admin = Author.objects.get(api_token=key)
-                project = Project.objects.get(id=int(id), author=admin)
-                if project is not None:
-                    if type is None or type == "client":
-                        project.views += 1
-                        project.save()
-                    elif type == "admin":
-                        pass
-                    return Response({
-                        'status': 'success',
-                        'data': ProjectSerializer(project).data,
-                        'message': 'project details retrieved'
-                    })
-                else:
-                    return Response({
-                        'status': 'success',
-                        'message': 'Invalid project ID'
-                    })
-            except:
-                return Response({
-                    'status': 'error',
-                    'message': 'Invalid project ID or API Token'
-                })
-        else:
-            return Response({
-                'status': 'success',
-                'message': 'Invalid project ID or API Token'
-            })
-
-    @action(detail=False,
             methods=['post'])
-    def create_project(self, request, *args, **kwargs):
+    def add_comment(self, request, *args, **kwargs):
         key = request.POST.get('api_token')
-        title = request.POST.get('title')
-        db_id = request.POST.get('database_id')
-        cat_id = request.POST.get('category_id')
-        url = request.POST.get('url')
-        github = request.POST.get('github')
-        des = request.POST.get('description')
-        frames_ids = request.POST.getlist('frame_ids', [])
-        image = None
-        if request.FILES:
-            image = request.FILES.get('image')
+        id = request.POST.get('project_id')
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        comment = request.POST.get('comment')
+        star = request.POST.get('star')
         try:
             admin = Author.objects.get(api_token=key)
             if admin is not None:
                 # check if position does not exist
                 try:
-                    project = Project.objects.get(title=title, author=admin)
-                    return Response({
-                        'status': "error",
-                        "message": "project with the same title already exists!"
-                    })
-                except:
-                    category = ProjectCategory.objects.get(id=int(cat_id))
-                    database = Database.objects.get(id=int(db_id))
-                    new_pro = Project(author=admin, title=title, live_url=url, github_url=github,
-                                      description=des, image=image, category=category, database=database)
-                    new_pro.save()
-                    f_ids = [int(f_id) for f_id in frames_ids]
-                    frames = Framework.objects.filter(id__in=f_ids)
-                    for f in frames:
-                        new_pro.frameworks.add(f)
-                        new_pro.save()
+                    project = Project.objects.get(id=int(id), author=admin)
+                    comment = Comment(project=project, name=name, email=email, comment=comment)
+                    comment.save()
+                    if star:
+                        comment.star = int(star)
+                        comment.save()
                     return Response({
                         'status': "success",
-                        "message": "project created sucessfully",
-                        "data": ProjectSerializer(new_pro).data,
+                        "message": "comment added sucessfully",
+                        "data": CommentSerializer(comment).data,
+                    })
+                except Project.DoesNotExist():
+                    return Response({
+                        'status': "error",
+                        "message": "Invalid Project ID"
                     })
             else:
                 return Response({
                     'status': "error",
-                    "message": "User is not authorized"
+                    "message": "User not found"
                 })
         except Exception as e:
             print(e)
@@ -790,56 +745,31 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False,
             methods=['post'])
-    def edit_project(self, request, *args, **kwargs):
+    def reply_comment(self, request, *args, **kwargs):
         key = request.POST.get('api_token')
-        id = request.POST.get('project_id')
-        title = request.POST.get('title')
-        db_id = request.POST.get('database_id')
-        cat_id = request.POST.get('category_id')
-        url = request.POST.get('url')
-        github = request.POST.get('github')
-        des = request.POST.get('description')
-        frames_ids = request.POST.getlist('frame_ids', [])
+        id = request.POST.get('comment_id')
+        reply = request.POST.get('reply')
         try:
             admin = Author.objects.get(api_token=key)
             if admin is not None:
                 try:
-                    project = Project.objects.get(id=int(id), author=admin)
-                    category = ProjectCategory.objects.get(id=int(cat_id))
-                    database = Database.objects.get(id=int(db_id))
-                    project.title = title
-                    project.category = category
-                    project.database = database
-                    project.live_url = url
-                    project.github_url = github
-                    project.description = des
-                    project.save()
-                    if request.FILES:
-                        project.image = request.FILES.get('image')
-                        project.save()
-                    f_ids = [int(f_id) for f_id in frames_ids]
-                    frames = Framework.objects.filter(id__in=f_ids)
-                    for f in project.frameworks.all():
-                        project.frameworks.remove(f)
-                        project.save()
-                    for f in frames:
-                        project.frameworks.add(f)
-                        project.save()
+                    comment = Comment.objects.get(id=int(id), project__author=admin)
+                    comment.reply = reply
+                    comment.save()
                     return Response({
                         'status': "success",
-                        "message": "project edited sucessfully",
-                        "data": ProjectSerializer(project).data,
+                        "message": "comment replied sucessfully"
                     })
                 except Exception as e:
                     print(e)
                     return Response({
                         "status": "error",
-                        "message": f"project with id \'{id}\' does not exist"
+                        "message": f"comment with id \'{id}\' does not exist"
                     })
             else:
                 return Response({
                     'status': "error",
-                    "message": "User is not authorized"
+                    "message": "User not found"
                 })
         except:
             return Response({
@@ -849,23 +779,23 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False,
             methods=['post'])
-    def delete_project(self, request, *args, **kwargs):
+    def delete_comment(self, request, *args, **kwargs):
         key = request.POST.get('api_token')
-        id = request.POST.get('project_id')
+        id = request.POST.get('comment_id')
         try:
             admin = Author.objects.get(api_token=key)
             if admin is not None:
                 try:
-                    project = Project.objects.get(id=int(id), author=admin)
-                    project.delete()
+                    comment = Comment.objects.get(id=int(id), project__author=admin)
+                    comment.delete()
                     return Response({
                         'status': "success",
-                        "message": f"project \'{project.title}\' deleted sucessfully",
+                        "message": f"comment deleted sucessfully",
                     })
                 except:
                     return Response({
                         "status": "error",
-                        "message": f"project with id \'{id}\' does not exist"
+                        "message": f"comment with id \'{id}\' does not exist"
                     })
             else:
                 return Response({
@@ -1021,6 +951,109 @@ class ContactViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'Error getting message list'
             })
+    
+    @action(detail=False,
+            methods=['post'])
+    def add_message(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        msg = request.POST.get('message')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                # check if position does not exist
+                try:
+                    message = Contact(owner=admin, name=name, email=email, message=msg)
+                    message.save()
+                    send_contact_message(admin.user.email, admin.first_name, name, email, msg)
+                    return Response({
+                        'status': "success",
+                        "message": "message sent sucessfully"
+                    })
+                except:
+                    return Response({
+                        'status': "error",
+                        "message": "Error sending message"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User not found"
+                })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
+
+    @action(detail=False,
+            methods=['post'])
+    def reply_message(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('message_id')
+        reply = request.POST.get('reply')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    message = Contact.objects.get(id=int(id), owner=admin)
+                    message.reply = reply
+                    message.save()
+                    send_message_reply(message.email, admin.site_title, message.name, message.message, message.reply)
+                    return Response({
+                        'status': "success",
+                        "message": "message replied sucessfully"
+                    })
+                except Exception as e:
+                    print(e)
+                    return Response({
+                        "status": "error",
+                        "message": f"message with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
+
+    @action(detail=False,
+            methods=['post'])
+    def delete_message(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('message_id')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    message = Contact.objects.get(id=int(id), owner=admin)
+                    message.delete()
+                    return Response({
+                        'status': "success",
+                        "message": f"message deleted sucessfully",
+                    })
+                except:
+                    return Response({
+                        "status": "error",
+                        "message": f"message with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
+
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProjectCategory.objects.all()
@@ -1133,9 +1166,14 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
         key = request.POST.get('api_token')
         title = request.POST.get('title')
         des = request.POST.get('description')
+        image = request.FILES.get('image')
         try:
             admin = Author.objects.get(api_token=key)
-            Skill.objects.create(owner=admin, title=title, description=des)
+            skill = Skill(owner=admin, title=title, description=des)
+            skill.save()
+            if image:
+                skill.image = image
+                skill.save
             return Response({
                 'status': 'success',
                 'message': 'skill added successfully'
@@ -1145,6 +1183,36 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({
                 'status': 'error',
                 'message': 'error while adding skill'
+            })
+    @action(detail=False,
+            methods=['post'])
+    def delete_skill(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('skill_id')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    skill = Skill.objects.get(id=int(id), owner=admin)
+                    skill.delete()
+                    return Response({
+                        'status': "success",
+                        "message": f"skill deleted sucessfully",
+                    })
+                except:
+                    return Response({
+                        "status": "error",
+                        "message": f"skill with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
             })
 
 class InterestViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1191,6 +1259,36 @@ class InterestViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({
                 'status': 'error',
                 'message': 'error while adding interest'
+            })
+    @action(detail=False,
+            methods=['post'])
+    def delete_interest(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('interest_id')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    interest = Interest.objects.get(id=int(id), owner=admin)
+                    interest.delete()
+                    return Response({
+                        'status': "success",
+                        "message": f"interest deleted sucessfully",
+                    })
+                except:
+                    return Response({
+                        "status": "error",
+                        "message": f"interest with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
             })
 
 class EducationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1241,6 +1339,36 @@ class EducationViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({
                 'status': 'error',
                 'message': 'error while adding education'
+            })
+    @action(detail=False,
+            methods=['post'])
+    def delete_education(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('education_id')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    education = Education.objects.get(id=int(id), owner=admin)
+                    education.delete()
+                    return Response({
+                        'status': "success",
+                        "message": f"education deleted sucessfully",
+                    })
+                except:
+                    return Response({
+                        "status": "error",
+                        "message": f"education with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
             })
 
 class ExperienceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1293,6 +1421,36 @@ class ExperienceViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'error while adding experience'
             })
+    @action(detail=False,
+            methods=['post'])
+    def delete_experience(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('experience_id')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    experience = Experience.objects.get(id=int(id), owner=admin)
+                    experience.delete()
+                    return Response({
+                        'status': "success",
+                        "message": f"experience deleted sucessfully",
+                    })
+                except:
+                    return Response({
+                        "status": "error",
+                        "message": f"experience with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
 
 class ReferenceViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Reference.objects.all()
@@ -1343,5 +1501,36 @@ class ReferenceViewSet(viewsets.ReadOnlyModelViewSet):
                 'status': 'error',
                 'message': 'error while adding reference'
             })
+    @action(detail=False,
+            methods=['post'])
+    def delete_reference(self, request, *args, **kwargs):
+        key = request.POST.get('api_token')
+        id = request.POST.get('reference_id')
+        try:
+            admin = Author.objects.get(api_token=key)
+            if admin is not None:
+                try:
+                    reference = Reference.objects.get(id=int(id), owner=admin)
+                    reference.delete()
+                    return Response({
+                        'status': "success",
+                        "message": f"reference deleted sucessfully",
+                    })
+                except:
+                    return Response({
+                        "status": "error",
+                        "message": f"reference with id \'{id}\' does not exist"
+                    })
+            else:
+                return Response({
+                    'status': "error",
+                    "message": "User is not found"
+                })
+        except:
+            return Response({
+                'status': "error",
+                "message": "Invalid API token"
+            })
+
 
 
